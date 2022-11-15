@@ -1,7 +1,5 @@
 import telebot
 from datetime import datetime, timedelta
-from pyrogram.types import ChatPermissions
-
 from telebot import custom_filters
 from telebot import types
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -77,12 +75,12 @@ def callback(call):
 @bot.message_handler(content_types=['text'])
 def message_reply(message):
     if message.text == "Повысить его!":
-        bot.promote_chat_member(message.chat.id, message.from_user.id, )
+        bot.promote_chat_member(message.chat.id, message.from_user.id)
         bot.send_message(message.chat.id, 'user is now an admin')
 
     if message.text == "БАн":
         bot.ban_chat_member(message.chat.id, message.from_user.id)
-        bot.send_message(message.chat.id, f'User {message.from_user.id} was banned')
+        bot.send_message(message.chat.id, f'User was banned')
 
     if message.text == "тише!":
         bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, datetime.now() + timedelta(days=1))
@@ -90,8 +88,7 @@ def message_reply(message):
 
     if message.text == "разБАн":
         bot.unban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
-        link = bot.create_chat_invite_link(message.chat.id)
-        bot.send_message(message.chat.id, f'User was unbanned. He can now come back via invitation link: {link}')
+        bot.send_message(message.chat.id, f'User was unbanned. He can now come back via invitation link')
 
 
 # вопрос для новичка
