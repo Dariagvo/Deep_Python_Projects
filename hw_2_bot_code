@@ -1,0 +1,105 @@
+import telebot
+from datetime import datetime, timedelta
+from pyrogram.types import ChatPermissions
+
+from telebot import custom_filters
+from telebot import types
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+
+TOKEN = '5280772478:AAFJtk6b3uttZ7PVOZY4fOCeEHCh42PloBQ'
+bot = telebot.TeleBot(TOKEN)
+
+
+# напишешь /site и он тебе ссылку
+@bot.message_handler(commands=['site'])
+def button_message(message):
+    markup = InlineKeyboardMarkup(row_width=2)  ##2 -> Две кнопки вряд, x -> x кнопка вряд
+    item_1 = InlineKeyboardButton('Держи сайт', url='https://vk.com/daria_gvo')
+    markup.add(item_1)
+    bot.send_message(message.chat.id, 'Возьмите ссылочку, пожалуйста!', reply_markup=markup)
+
+
+@bot.message_handler(commands=['start'])
+def button_message(message):
+    bot.send_message(message.chat.id, "Приветики это полезный бот для вашего чатика")
+    markup = InlineKeyboardMarkup(row_width=2)
+    item_1 = InlineKeyboardButton('Сделать админом', callback_data='promote')
+    item_2 = InlineKeyboardButton('Получить статистику', callback_data='stata')
+    item_3 = InlineKeyboardButton('Забанить пользователя', callback_data='ban')
+    item_4 = InlineKeyboardButton('Разбанить пользователя', callback_data='unban')
+    item_5 = InlineKeyboardButton('Заставить бота уйти :( ', callback_data='leave')
+    item_6 = InlineKeyboardButton('Замьютить коллегу', callback_data='mute')
+    markup.add(item_1, item_2, item_6, item_3, item_4, item_5)
+    bot.send_message(message.chat.id, 'Выберите, что вам надо', reply_markup=markup)
+
+
+# @bot.inline_handler(func=lambda query: True)
+# def inline_mode(query):
+#     markup = InlineKeyboardMarkup(row_width=2)  ##2 -> Две кнопки вряд, x -> x кнопка вряд
+#     item_1 = InlineKeyboardButton('Держи сайт', url='https://vk.com/daria_gvo')
+#     markup.add(item_1)
+#     bot.answer_inline_query(query.id, ['https://vk.com/daria_gvo'])
+#     bot.send_message(query.id, 'Возьмите ссылочку, пожалуйста!', reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback(call):
+    if __name__ == '__main__':
+        if call.message:
+            if call.data == 'stata':
+                admins_count, members_count = 0, 0
+                for each in bot.get_chat_administrators(call.message.chat.id):
+                    admins_count += 1
+                members_count = bot.get_chat_members_count(call.message.chat.id)
+                bot.send_message(call.message.chat.id, f"Вот вам статистика: \n "
+                                                       f"администраторов в чате {admins_count} "
+                                                       f"\n участников чата {members_count}")
+            if call.data == 'promote':
+                bot.send_message(call.message.chat.id, 'Ответьте на сообщение будущего администратора фразой\n'
+                                                       '"Повысить его!"')
+            if call.data == 'ban':
+                bot.send_message(call.message.chat.id, 'Ответьте на сообщение того, кого мы баним фразой\n'
+                                                       '"БАн"')
+            if call.data == 'unban':
+                bot.send_message(call.message.chat.id, 'Ответьте на сообщение того, кого мы разбаним фразой\n'
+                                                       '"разБАн"')
+
+            if call.data == 'mute':
+                bot.send_message(call.message.chat.id, 'Много болтает.... Ответьте на его сообщение\n'
+                                                       '"тише!"')
+
+            if call.data == 'leave':
+                bot.send_message(call.message.chat.id, 'why..........://')
+                bot.leave_chat(call.message.chat.id)
+
+
+@bot.message_handler(content_types=['text'])
+def message_reply(message):
+    if message.text == "Повысить его!":
+        bot.promote_chat_member(message.chat.id, message.from_user.id, )
+        bot.send_message(message.chat.id, 'user is now an admin')
+
+    if message.text == "БАн":
+        bot.ban_chat_member(message.chat.id, message.from_user.id)
+        bot.send_message(message.chat.id, f'User {message.from_user.id} was banned')
+
+    if message.text == "тише!":
+        bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, datetime.now() + timedelta(days=1))
+        bot.send_message(message.chat.id, 'Помолчит сутки, а там посмотрим')
+
+    if message.text == "разБАн":
+        bot.unban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
+        link = bot.create_chat_invite_link(message.chat.id)
+        bot.send_message(message.chat.id, f'User was unbanned. He can now come back via invitation link: {link}')
+
+
+# вопрос для новичка
+@bot.message_handler(content_types=["new_chat_members"])
+def user_joined(message):
+    bot.reply_to(message, "Как называют невысокого человека, который волнуется?")
+
+
+if __name__ == '__main__':
+    bot.add_custom_filter(custom_filters.TextMatchFilter())
+    bot.polling(none_stop=True, interval=0)
