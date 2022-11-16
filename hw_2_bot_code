@@ -75,11 +75,11 @@ def callback(call):
 @bot.message_handler(content_types=['text'])
 def message_reply(message):
     if message.text == "Повысить его!":
-        bot.promote_chat_member(message.chat.id, message.from_user.id)
+        bot.promote_chat_member(message.chat.id, message.reply_to_message.from_user.id)
         bot.send_message(message.chat.id, 'user is now an admin')
 
     if message.text == "БАн":
-        bot.ban_chat_member(message.chat.id, message.from_user.id)
+        bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
         bot.send_message(message.chat.id, f'User was banned')
 
     if message.text == "тише!":
